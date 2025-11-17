@@ -43,7 +43,7 @@ public class FacultyService(DataContext context) : IFacultyService
     {
         try
         {
-            var existsFaculty = await context.Faculties.FirstOrDefaultAsync(x => x.Id == faculty.Id);
+            var existsFaculty = await context.Faculties.FirstOrDefaultAsync(x => x.Id == faculty.Id &&  x.IsDeleted == false);
             if (existsFaculty == null) return new Responce<string>(HttpStatusCode.NotFound,"Faculty not found");
             existsFaculty.Name = faculty.Name;
             existsFaculty.DecanName = faculty.DecanName;
@@ -63,7 +63,7 @@ public class FacultyService(DataContext context) : IFacultyService
     {
         try
         {
-            var existsFaculty = await context.Faculties.FirstOrDefaultAsync(x => x.Id == id);
+            var existsFaculty = await context.Faculties.FirstOrDefaultAsync(x => x.Id == id && x.IsDeleted == false);
             if(existsFaculty == null) return new Responce<string>(HttpStatusCode.NotFound,"Faculty not found");
             existsFaculty.IsDeleted = true;
             var res = await context.SaveChangesAsync();

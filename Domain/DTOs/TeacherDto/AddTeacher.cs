@@ -1,13 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Domain.Entities;
+namespace Domain.DTOs.TeacherDto;
 
-public class Teacher : BaseEntities
+public class AddTeacher
 {
     public required string FullName { get; set; }
     [EmailAddress]
     public required string Email { get; set; }
     public int FacultyId { get; set; }
-    public Faculty? Faculty { get; set; }
-    public List<Group>? Groups { get; set; }
 }

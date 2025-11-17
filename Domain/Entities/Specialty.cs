@@ -7,4 +7,5 @@ public class Specialty : BaseEntities
     public int FacultyId { get; set; }
     public Faculty? Faculty { get; set; }
     public  List<Student>? Students { get; set; }
+    public List<Group>? Groups { get; set; }
 }

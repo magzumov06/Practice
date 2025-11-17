@@ -45,7 +45,7 @@ public class SpecialtyService(DataContext context) : ISpecialtyService
     {
         try
         {
-            var existingSpecialty = await context.Specialties.FirstOrDefaultAsync(x=> x.Id == specialty.Id);
+            var existingSpecialty = await context.Specialties.FirstOrDefaultAsync(x=> x.Id == specialty.Id && x.IsDeleted == false);
             if (existingSpecialty == null) return new Responce<string>(HttpStatusCode.NotFound, "Specialty not found");
             existingSpecialty.Name = specialty.Name;
             existingSpecialty.SpecialityLanguage = specialty.SpecialityLanguage;
@@ -66,7 +66,7 @@ public class SpecialtyService(DataContext context) : ISpecialtyService
     {
         try
         {
-            var specialty = await context.Specialties.FirstOrDefaultAsync(x => x.Id == id);
+            var specialty = await context.Specialties.FirstOrDefaultAsync(x => x.Id == id  && x.IsDeleted == false);
             if (specialty == null) return new Responce<string>(HttpStatusCode.NotFound, "Specialty not found");
             specialty.IsDeleted = true;
             var res = await context.SaveChangesAsync();

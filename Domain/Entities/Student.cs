@@ -12,5 +12,4 @@ public class Student : BaseEntities
     public Faculty? Faculty { get; set; }
     public int SpecialtyId { get; set; }
     public Specialty? Specialty { get; set; }
-    public List<Enrollment>? Enrollments { get; set; }
 }

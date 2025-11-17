@@ -4,11 +4,11 @@ namespace Infrastructure.Data;
 
 public class DataContext(DbContextOptions<DataContext> options) : DbContext(options)
 {
-    DbSet<Enrollment> Enrollments { get; set; }
     public DbSet<Student> Students { get; set; }
     public DbSet<Teacher> Teachers { get; set; }
     public DbSet<Specialty> Specialties { get; set; }
     public DbSet<Faculty> Faculties { get; set; }
+    public DbSet<Group> Groups { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -32,16 +32,7 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
             .HasForeignKey(s => s.SpecialtyId)
             .OnDelete(DeleteBehavior.Restrict);
         
-        modelBuilder.Entity<Student>()
-            .HasMany(s => s.Enrollments)
-            .WithOne(e => e.Student)
-            .HasForeignKey(s => s.StudentId)
-            .OnDelete(DeleteBehavior.Cascade);
-        
-        modelBuilder.Entity<Enrollment>()
-            .HasOne(e => e.Student)
-            .WithMany(e => e.Enrollments)
-            .HasForeignKey(e => e.StudentId);
+      
         
     }
 }

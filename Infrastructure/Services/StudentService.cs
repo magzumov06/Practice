@@ -15,9 +15,9 @@ public class StudentService(DataContext context) : IStudentServices
     {
         try
         {
-            var faculty = await context.Faculties.FirstOrDefaultAsync(f => f.Id == student.FacultyId);
+            var faculty = await context.Faculties.FirstOrDefaultAsync(f => f.Id == student.FacultyId &&  f.IsDeleted == false);
             if (faculty == null) return new Responce<string>(HttpStatusCode.BadRequest, "Чунин факултет вуҷуд надорад!");
-            var specialty = await context.Specialties.FirstOrDefaultAsync(s => s.Id == student.SpecialtyId);
+            var specialty = await context.Specialties.FirstOrDefaultAsync(s => s.Id == student.SpecialtyId && s.IsDeleted == false);
             if (specialty == null) return new Responce<string>(HttpStatusCode.BadRequest, "Чунин ихтисос вуҷуд надорад!");
             var newstudent = new Student()
             {
@@ -45,7 +45,7 @@ public class StudentService(DataContext context) : IStudentServices
     {
         try
         {
-            var updatStudent = await context.Students.FirstOrDefaultAsync(x=> x.Id == student.Id);
+            var updatStudent = await context.Students.FirstOrDefaultAsync(x=> x.Id == student.Id &&  x.IsDeleted == false);
             if(updatStudent == null) return new Responce<string>(HttpStatusCode.NotFound, "Student not found");
             updatStudent.FirstName = student.FirstName;
             updatStudent.LastName = student.LastName;
@@ -69,7 +69,7 @@ public class StudentService(DataContext context) : IStudentServices
     {
         try
         {
-            var student = await context.Students.FirstOrDefaultAsync(x => x.Id == id);
+            var student = await context.Students.FirstOrDefaultAsync(x => x.Id == id &&  x.IsDeleted == false);
             if(student == null) return new Responce<string>(HttpStatusCode.NotFound, "Student not found");
             student.IsDeleted = true;
             var res = await context.SaveChangesAsync();

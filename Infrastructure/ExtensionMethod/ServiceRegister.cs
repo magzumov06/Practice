@@ -11,5 +11,7 @@ public static class ServiceRegister
         services.AddScoped<IStudentServices, StudentService>();
         services.AddScoped<IFacultyService, FacultyService>();
         services.AddScoped<ISpecialtyService, SpecialtyService>();
+        services.AddScoped<IGroupService, GroupService>();
+        services.AddScoped<ITeacherService, TeacherService>();
     }
 }
