@@ -1,4 +1,4 @@
-﻿using Domain.DTOs.Group;
+﻿using Domain.DTOs.GroupDto;
 using Domain.Filter;
 using Domain.Responces;
 

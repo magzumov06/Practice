@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20251118160906_init3")]
+    partial class init3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -180,50 +183,6 @@ namespace Infrastructure.Migrations
                     b.ToTable("Students");
                 });
 
-            modelBuilder.Entity("Domain.Entities.StudentGroup", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("GroupId")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsLeft")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime>("JoinedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("LeaveDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("StudentId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GroupId");
-
-                    b.HasIndex("StudentId");
-
-                    b.ToTable("StudentGroups");
-                });
-
             modelBuilder.Entity("Domain.Entities.Teacher", b =>
                 {
                     b.Property<int>("Id")
@@ -316,25 +275,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("Specialty");
                 });
 
-            modelBuilder.Entity("Domain.Entities.StudentGroup", b =>
-                {
-                    b.HasOne("Domain.Entities.Groups", "Group")
-                        .WithMany("StudentGroups")
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Entities.Student", "Student")
-                        .WithMany("StudentGroups")
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Group");
-
-                    b.Navigation("Student");
-                });
-
             modelBuilder.Entity("Domain.Entities.Teacher", b =>
                 {
                     b.HasOne("Domain.Entities.Faculty", "Faculty")
@@ -357,21 +297,11 @@ namespace Infrastructure.Migrations
                     b.Navigation("Teachers");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Groups", b =>
-                {
-                    b.Navigation("StudentGroups");
-                });
-
             modelBuilder.Entity("Domain.Entities.Specialty", b =>
                 {
                     b.Navigation("Groups");
 
                     b.Navigation("Students");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Student", b =>
-                {
-                    b.Navigation("StudentGroups");
                 });
 
             modelBuilder.Entity("Domain.Entities.Teacher", b =>

@@ -38,7 +38,7 @@ public class TeacherController(ITeacherService service) : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetTeachers(TeacherFilter filter)
+    public async Task<IActionResult> GetTeachers([FromQuery] TeacherFilter filter)
     {
         var res = await service.GetTeachers(filter);
         return StatusCode((int)res.StatusCode, res);

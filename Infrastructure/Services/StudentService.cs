@@ -16,10 +16,12 @@ public class StudentService(DataContext context) : IStudentServices
         try
         {
             var faculty = await context.Faculties.FirstOrDefaultAsync(f => f.Id == student.FacultyId &&  f.IsDeleted == false);
-            if (faculty == null) return new Responce<string>(HttpStatusCode.BadRequest, "Чунин факултет вуҷуд надорад!");
+            if (faculty == null) 
+                return new Responce<string>(HttpStatusCode.BadRequest, "Чунин факултет вуҷуд надорад!");
             var specialty = await context.Specialties.FirstOrDefaultAsync(s => s.Id == student.SpecialtyId && s.IsDeleted == false);
-            if (specialty == null) return new Responce<string>(HttpStatusCode.BadRequest, "Чунин ихтисос вуҷуд надорад!");
-            var newstudent = new Student()
+            if (specialty == null) 
+                return new Responce<string>(HttpStatusCode.BadRequest, "Чунин ихтисос вуҷуд надорад!");
+            var newStudent = new Student()
             {
                 FirstName = student.FirstName,
                 LastName = student.LastName,
@@ -30,6 +32,7 @@ public class StudentService(DataContext context) : IStudentServices
                 CreatedDate = DateTime.UtcNow,
                 UpdatedDate = DateTime.UtcNow
             };
+            await context.Students.AddAsync(newStudent);
             var res = await context.SaveChangesAsync();
             return res  > 0
                 ? new Responce<string>(HttpStatusCode.Created, "Student added successfully")

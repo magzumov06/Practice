@@ -1,11 +1,12 @@
 ﻿using System.Net;
-using Domain.DTOs.Group;
+using Domain.DTOs.GroupDto;
+using Domain.DTOs.StudentGroupDto;
+using Domain.Entities;
 using Domain.Filter;
 using Domain.Responces;
 using Infrastructure.Data;
 using Infrastructure.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Group = Domain.Entities.Group;
 
 namespace Infrastructure.Services;
 
@@ -17,17 +18,21 @@ public class GroupService(DataContext context) : IGroupService
         {
             var existsMentor = await context.Teachers.FirstOrDefaultAsync(x=> x.Id == group.MentorId && x.IsDeleted == false);
             if (existsMentor == null)
-                return new Responce<string>(HttpStatusCode.BadRequest, "Oмузгор вуҷуд надорад!");
+                return new Responce<string>(HttpStatusCode.NotFound, "Oмузгор вуҷуд надорад!");
             
             var existsFaculty = await context.Faculties.FirstOrDefaultAsync(x => x.Id == group.FacultyId  && x.IsDeleted == false);
             if (existsFaculty == null)
-                return new Responce<string>(HttpStatusCode.BadRequest, "Хатоги ҳангоми интихоби факултет!");
+                return new Responce<string>(HttpStatusCode.NotFound, "Хатоги ҳангоми интихоби факултет!");
             
             var existsSpecialty = await context.Specialties.FirstOrDefaultAsync(x=> x.Id == group.SpecialtyId  && x.IsDeleted == false);
             if (existsSpecialty == null)
-                return new Responce<string>(HttpStatusCode.BadRequest, "Чунин ихтисос вуҷуд надорад!");
-                
-            var newGroup = new Group()
+                return new Responce<string>(HttpStatusCode.NotFound, "Чунин ихтисос вуҷуд надорад!");
+            
+            var existsGroup = await context.Groups.FirstOrDefaultAsync(x=> x.Name == group.Name && x.IsDeleted == false);
+            if (existsGroup != null)
+                return new Responce<string>(HttpStatusCode.BadRequest, "Чунин гуруҳ алакай вуҷуд дорад!");
+            
+            var newGroup = new Groups()
             {
                 Name = group.Name,
                 SpecialtyId = group.SpecialtyId,
@@ -100,7 +105,7 @@ public class GroupService(DataContext context) : IGroupService
     {
         try
         {
-            var existsGroup = await context.Groups.FirstOrDefaultAsync(x=> x.Id == id && x.IsDeleted == false);
+            var existsGroup = await context.Groups.Include(groups => groups.StudentGroups).FirstOrDefaultAsync(x=> x.Id == id && x.IsDeleted == false);
             if (existsGroup == null)
                 return new Responce<GetGroup>(HttpStatusCode.NotFound,"group not found");
             var dto = new GetGroup()
@@ -112,6 +117,14 @@ public class GroupService(DataContext context) : IGroupService
                 SpecialtyId = existsGroup.SpecialtyId,
                 LessonStartTime = existsGroup.LessonStartTime,
                 LessonEndTime = existsGroup.LessonEndTime,
+                StudentGroups = existsGroup.StudentGroups.Select(sg => new GetStudentGroup()
+                {
+                    StudentId = sg.StudentId,
+                    GroupId = sg.GroupId,
+                    IsActive = sg.IsActive,
+                    JoinedDate = sg.JoinedDate,
+                    LeaveDate = sg.LeaveDate,
+                }).ToList(),
                 CreatedDate = existsGroup.CreatedDate,
                 UpdatedDate = existsGroup.UpdatedDate,
             };
@@ -123,50 +136,71 @@ public class GroupService(DataContext context) : IGroupService
         }
     }
 
-    public async Task<PaginationResponce<List<GetGroup>>> GetGroups(GroupFilter filter)
+public async Task<PaginationResponce<List<GetGroup>>> GetGroups(GroupFilter filter)
+{
+    try
     {
-        try
+        var query = context.Groups.AsQueryable();
+
+        if (filter.Id.HasValue)
+            query = query.Where(x => x.Id == filter.Id);
+
+        if (!string.IsNullOrEmpty(filter.Name))
+            query = query.Where(x => x.Name.ToLower().Contains(filter.Name.ToLower()));
+
+        if (filter.SpecialtyId.HasValue)
+            query = query.Where(x => x.SpecialtyId == filter.SpecialtyId);
+
+        if (filter.MentorId.HasValue)
+            query = query.Where(x => x.MentorId == filter.MentorId);
+
+        if (filter.FacultyId.HasValue)
+            query = query.Where(x => x.FacultyId == filter.FacultyId);
+
+        query = query.Where(x => !x.IsDeleted);
+
+        var totalCount = await query.CountAsync();
+
+        var skip = (filter.PageNumber - 1) * filter.PageSize;
+
+        var group = await query
+            .Skip(skip)
+            .Take(filter.PageSize)
+            .Include(x => x.StudentGroups)
+            .ToListAsync();
+
+        if (group.Count == 0)
+            return new PaginationResponce<List<GetGroup>>(HttpStatusCode.NotFound, "group not found");
+
+        var dtos = group.Select(x => new GetGroup()
         {
-            var query = context.Groups.AsQueryable();
-            
-            if(filter.Id.HasValue) 
-                query = query.Where(x => x.Id == filter.Id);
-            
-            if(!string.IsNullOrEmpty(filter.Name))
-                query = query.Where(x => x.Name.ToLower().Contains(filter.Name.ToLower()));
-            
-            if(filter.SpecialtyId.HasValue)
-                query = query.Where(x => x.SpecialtyId == filter.SpecialtyId);
-            
-            if(filter.MentorId.HasValue)
-                query = query.Where(x => x.MentorId == filter.MentorId);
-            
-            if(filter.FacultyId.HasValue)
-                query = query.Where(x => x.FacultyId == filter.FacultyId);
-            
-            query = query.Where(x=> x.IsDeleted == false);
-            var totalCount = await query.CountAsync();
-            var skip = (filter.PageNumber - 1) * filter.PageSize;
-            var group = await query.Skip(skip).Take(filter.PageSize).ToListAsync();
-            if(group.Count == 0)
-                return new PaginationResponce<List<GetGroup>>(HttpStatusCode.NotFound,"group not found");
-            var dtos = group.Select(x=> new GetGroup()
+            Id = x.Id,
+            Name = x.Name,
+            MentorId = x.MentorId,
+            FacultyId = x.FacultyId,
+            SpecialtyId = x.SpecialtyId,
+            LessonStartTime = x.LessonStartTime,
+            LessonEndTime = x.LessonEndTime,
+
+            StudentGroups = x.StudentGroups.Select(sg => new GetStudentGroup()
             {
-                Id = x.Id,
-                Name = x.Name,
-                MentorId = x.MentorId,
-                FacultyId = x.FacultyId,
-                SpecialtyId = x.SpecialtyId,
-                LessonStartTime = x.LessonStartTime,
-                LessonEndTime = x.LessonEndTime,
-                CreatedDate = x.CreatedDate,
-                UpdatedDate = x.UpdatedDate,
-            }).ToList();
-            return new PaginationResponce<List<GetGroup>>(dtos, totalCount, filter.PageNumber, filter.PageSize);
-        }
-        catch (Exception e)
-        {
-            return new PaginationResponce<List<GetGroup>>(HttpStatusCode.InternalServerError, e.Message);
-        }
+                StudentId = sg.StudentId,
+                GroupId = sg.GroupId,
+                IsActive = sg.IsActive,
+                JoinedDate = sg.JoinedDate,
+                LeaveDate = sg.LeaveDate,
+            }).ToList(),
+
+            CreatedDate = x.CreatedDate,
+            UpdatedDate = x.UpdatedDate,
+        }).ToList();
+
+        return new PaginationResponce<List<GetGroup>>(dtos, totalCount, filter.PageNumber, filter.PageSize);
     }
+    catch (Exception e)
+    {
+        return new PaginationResponce<List<GetGroup>>(HttpStatusCode.InternalServerError, e.Message);
+    }
+}
+
 }

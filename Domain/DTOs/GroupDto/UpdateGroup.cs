@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Domain.DTOs.Group;
+﻿namespace Domain.DTOs.GroupDto;
 
 public class UpdateGroup
 {

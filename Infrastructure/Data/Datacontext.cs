@@ -8,7 +8,8 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
     public DbSet<Teacher> Teachers { get; set; }
     public DbSet<Specialty> Specialties { get; set; }
     public DbSet<Faculty> Faculties { get; set; }
-    public DbSet<Group> Groups { get; set; }
+    public DbSet<Groups> Groups { get; set; }
+    public DbSet<StudentGroup> StudentGroups { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

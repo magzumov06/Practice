@@ -2,7 +2,7 @@
 
 namespace Domain.Entities;
 
-public class Group : BaseEntities
+public class Groups : BaseEntities
 {
     [Required]
     public required string Name { get; set; }
@@ -18,6 +18,6 @@ public class Group : BaseEntities
     
     public TimeOnly? LessonStartTime { get; set; }
     public TimeOnly? LessonEndTime { get; set; }
-    
+    public List<StudentGroup>? StudentGroups { get; set; }
     
 }

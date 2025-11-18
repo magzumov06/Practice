@@ -7,5 +7,5 @@ public class Faculty : BaseEntities
     public  List<Specialty> Specialties { get; set; }
     public List<Student> Students { get; set; }
     public List<Teacher> Teachers { get; set; }
-    public  List<Group> Groups { get; set; }
+    public  List<Groups> Groups { get; set; }
 }

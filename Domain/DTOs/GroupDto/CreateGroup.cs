@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Domain.Entities;
 
-namespace Domain.DTOs.Group;
+namespace Domain.DTOs.GroupDto;
 
 public class CreateGroup
 {

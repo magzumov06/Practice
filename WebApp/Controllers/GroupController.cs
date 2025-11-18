@@ -1,4 +1,4 @@
-﻿using Domain.DTOs.Group;
+﻿using Domain.DTOs.GroupDto;
 using Domain.Filter;
 using Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -38,7 +38,7 @@ public class GroupController(IGroupService service) : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetGroups(GroupFilter filter)
+    public async Task<IActionResult> GetGroups([FromQuery]GroupFilter filter)
     {
         var res =  await service.GetGroups(filter);
         return StatusCode((int)res.StatusCode, res);
