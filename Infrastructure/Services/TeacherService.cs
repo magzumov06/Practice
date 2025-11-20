@@ -6,6 +6,7 @@ using Domain.Responces;
 using Infrastructure.Data;
 using Infrastructure.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace Infrastructure.Services;
 
@@ -15,9 +16,13 @@ public class TeacherService(DataContext context) : ITeacherService
     {
         try
         {
+            Log.Information("Adding teacher: {FullName}, {Email},{FacultyId}", teacher.FullName, teacher.Email, teacher.FacultyId);
             var existsFaculty = await context.Faculties.FirstOrDefaultAsync(x=>x.Id == teacher.FacultyId && x.IsDeleted == false);
             if (existsFaculty == null)
+            {
+                Log.Warning("Faculty not found:{FacultyId}" , teacher.FacultyId);
                 return new Responce<string>(HttpStatusCode.BadRequest,"Хатоги ҳангоми интихоби факултет!");
+            }
             var newTeacher = new Teacher()
             {
                 FullName = teacher.FullName,
@@ -28,12 +33,17 @@ public class TeacherService(DataContext context) : ITeacherService
             };
             await context.Teachers.AddAsync(newTeacher);
             var res = await context.SaveChangesAsync();
-            return res > 0
-                ? new Responce<string>(HttpStatusCode.Created, "Teacher successfully added!")
-                : new Responce<string>(HttpStatusCode.BadRequest, "Something went wrong");
+            if (res > 0)
+            {
+                Log.Information("Teacer {TeacherId} added", newTeacher.Id);
+                return new Responce<string>(HttpStatusCode.Created, "Teacher successfully added!");
+            }
+            Log.Warning("Teacher {TeacherId} could not be added", newTeacher.Id);
+            return new Responce<string>(HttpStatusCode.BadRequest, "Something went wrong");
         }
         catch (Exception e)
         {
+            Log.Error("Error adding teacher");
             return new Responce<string>(HttpStatusCode.InternalServerError, e.Message);
         }
     }
@@ -42,9 +52,11 @@ public class TeacherService(DataContext context) : ITeacherService
     {
         try
         {
+            Log.Information("Updating teacher");
             var existsTeacher = await context.Teachers.FirstOrDefaultAsync(x => x.Id == teacher.Id && x.IsDeleted == false);
             if (existsTeacher == null)
                 return new Responce<string>(HttpStatusCode.NotFound,"Teacher not found!");
+            Log.Information("Updating teacher {id}.OldValue:  {OldFullName},{OldEmail},{OldFacultyId}",existsTeacher.Id,existsTeacher.FullName,existsTeacher.Email,existsTeacher.FacultyId);
             existsTeacher.FullName = teacher.FullName;
             existsTeacher.Email = teacher.Email;
             existsTeacher.FacultyId = teacher.FacultyId;
@@ -56,6 +68,7 @@ public class TeacherService(DataContext context) : ITeacherService
         }
         catch (Exception e)
         {
+            Log.Error("Error updating teacher");
             return new Responce<string>(HttpStatusCode.InternalServerError, e.Message);
         }
     }
@@ -64,6 +77,7 @@ public class TeacherService(DataContext context) : ITeacherService
     {
         try
         {
+            Log.Information("Deleting teacher {id}",id);
             var existsTeacher = await context.Teachers.FirstOrDefaultAsync(x => x.Id == id && x.IsDeleted == false);
             if (existsTeacher == null)
                 return new Responce<string>(HttpStatusCode.NotFound,"Teacher not found!");
@@ -76,6 +90,7 @@ public class TeacherService(DataContext context) : ITeacherService
         }
         catch (Exception e)
         {
+            Log.Error("Error deleting teacher");
             return new Responce<string>(HttpStatusCode.InternalServerError, e.Message);
         }
     }
@@ -84,6 +99,7 @@ public class TeacherService(DataContext context) : ITeacherService
     {
         try
         {
+            Log.Information("Getting teacher");
             var existsTeacher = await context.Teachers.FirstOrDefaultAsync(x => x.Id == id  && x.IsDeleted == false);
             if (existsTeacher == null)
                 return new Responce<GetTeacher>(HttpStatusCode.NotFound, "Teacher not found!");
@@ -100,8 +116,8 @@ public class TeacherService(DataContext context) : ITeacherService
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
-            throw;
+            Log.Error("Error getting teacher");
+            return new Responce<GetTeacher>(HttpStatusCode.InternalServerError,e.Message);
         }
     }
 
@@ -109,6 +125,7 @@ public class TeacherService(DataContext context) : ITeacherService
     {
         try
         {
+            Log.Information("Getting teachers");
             var query = context.Teachers.AsQueryable();
             if (filter.Id.HasValue)
                 query = query.Where(x => x.Id == filter.Id.Value);
@@ -128,6 +145,7 @@ public class TeacherService(DataContext context) : ITeacherService
             var teachers = await query.Skip(skip).Take(filter.PageSize).ToListAsync();
             if(teachers.Count == 0)
                 return new PaginationResponce<List<GetTeacher>>(HttpStatusCode.NotFound,"Teacher not found!");
+            Log.Information("Found {Total} teachers", total);
             var dtos = teachers.Select(x=> new GetTeacher()
             {
                 Id = x.Id,
@@ -141,6 +159,7 @@ public class TeacherService(DataContext context) : ITeacherService
         }
         catch (Exception e)
         {
+            Log.Error("Error getting teachers");
             return new PaginationResponce<List<GetTeacher>>(HttpStatusCode.InternalServerError, e.Message);
         }
     }

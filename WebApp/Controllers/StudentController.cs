@@ -38,7 +38,7 @@ public class StudentController(IStudentServices services) : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Get([FromQuery] StudentFilter filter)
+    public async Task<IActionResult> GetStudents([FromQuery] StudentFilter filter)
     {
         var res = await services.GetStudents(filter);
         return StatusCode((int)res.StatusCode, res);

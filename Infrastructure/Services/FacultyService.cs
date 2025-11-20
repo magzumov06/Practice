@@ -5,6 +5,7 @@ using Domain.Responces;
 using Infrastructure.Data;
 using Infrastructure.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace Infrastructure.Services;
 
@@ -14,6 +15,7 @@ public class FacultyService(DataContext context) : IFacultyService
     {
         try
         {
+            Log.Information("Adding faculty");
             var existsFaculty = await context.Faculties.FirstOrDefaultAsync(x=> x.Name == faculty.Name);
             if (existsFaculty != null)
             {
@@ -35,6 +37,7 @@ public class FacultyService(DataContext context) : IFacultyService
         }
         catch (Exception e)
         {
+            Log.Error("Error adding faculty");
             return new Responce<string>(HttpStatusCode.InternalServerError, e.Message);
         }
     }
@@ -43,6 +46,7 @@ public class FacultyService(DataContext context) : IFacultyService
     {
         try
         {
+            Log.Information("Updating faculty");
             var existsFaculty = await context.Faculties.FirstOrDefaultAsync(x => x.Id == faculty.Id &&  x.IsDeleted == false);
             if (existsFaculty == null) return new Responce<string>(HttpStatusCode.NotFound,"Faculty not found");
             existsFaculty.Name = faculty.Name;
@@ -55,6 +59,7 @@ public class FacultyService(DataContext context) : IFacultyService
         }
         catch (Exception e)
         {
+            Log.Error("Error updating faculty");
             return new Responce<string>(HttpStatusCode.InternalServerError, e.Message);
         }
     }
@@ -63,6 +68,7 @@ public class FacultyService(DataContext context) : IFacultyService
     {
         try
         {
+            Log.Information("Deleting faculty");
             var existsFaculty = await context.Faculties.FirstOrDefaultAsync(x => x.Id == id && x.IsDeleted == false);
             if(existsFaculty == null) return new Responce<string>(HttpStatusCode.NotFound,"Faculty not found");
             existsFaculty.IsDeleted = true;
@@ -73,6 +79,7 @@ public class FacultyService(DataContext context) : IFacultyService
         }
         catch (Exception e)
         {
+            Log.Error("Error deleting faculty");
             return new Responce<string>(HttpStatusCode.InternalServerError, e.Message);
         }
     }
@@ -81,6 +88,7 @@ public class FacultyService(DataContext context) : IFacultyService
     {
         try
         {
+            Log.Information("Getting faculty");
             var existsFaculty = await context.Faculties.FirstOrDefaultAsync(x => x.Id == id && x.IsDeleted == false);
             if(existsFaculty == null) return new Responce<GetFaculty>(HttpStatusCode.NotFound,"Faculty not found");
             var dto = new GetFaculty()
@@ -95,6 +103,7 @@ public class FacultyService(DataContext context) : IFacultyService
         }
         catch (Exception e)
         {
+            Log.Error("Error getting faculty");
             return new Responce<GetFaculty>(HttpStatusCode.InternalServerError, e.Message);
         }
     }
@@ -103,6 +112,7 @@ public class FacultyService(DataContext context) : IFacultyService
     {
         try
         {
+            Log.Information("Getting all faculties");
             var faculties = await context.Faculties.Where(x=> x.IsDeleted == false).ToListAsync();
             if(faculties.Count == 0) return new Responce<List<GetFaculty>>(HttpStatusCode.NotFound,"Faculty not found");
             var dtos = faculties.Select(x => new GetFaculty()
@@ -117,6 +127,7 @@ public class FacultyService(DataContext context) : IFacultyService
         }
         catch (Exception e)
         {
+            Log.Error("Error getting all faculties");
             return new Responce<List<GetFaculty>>(HttpStatusCode.InternalServerError, e.Message);
         }
     }
